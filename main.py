@@ -1,9 +1,11 @@
+import csv
+
 import pyfiglet
 import sys
 import socket
 from datetime import datetime
 from scapy.all import *
-from scapy.layers.inet import ICMP, IP, TCP
+from scapy.layers.inet import ICMP, IP, TCP, UDP
 
 ascii_banner = pyfiglet.figlet_format("PORT SCANNER")
 print(ascii_banner)
@@ -18,6 +20,8 @@ tcp_ports = [80, 443, 53, 22, 1723,
 udp_ports = [161, 123, 53, 500, 111,
              137, 69, 5353]
 
+open_ports = []
+
 def checkhost():
     ping = IP(dst=ip)/ICMP()
     res = sr1(ping,timeout=1,verbose=0)
@@ -26,16 +30,32 @@ def checkhost():
     else:
         print("This host is up")
 
+
 #function to check open port
 def checkport():
+    # What to do:
+    header = ['ip address', 'port', 'date', 'status']
+    f = open("scanning.csv", "w")
+    writer = csv.writer(f)
+    writer.writerow(header)
     for port in tcp_ports:
-        tcpRequest = IP(dst=ip)/TCP(dport=port,flags="S")
-        tcpResponse = sr1(tcpRequest,timeout=1,verbose=0)
+        timer = datetime.now()
+        tcpRequest = IP(dst=ip)/TCP(dport=port, flags="S")
+        tcpResponse = sr1(tcpRequest, timeout=1, verbose=0)
         try:
             if tcpResponse.getlayer(TCP).flags == "SA":
-                print(port,"is listening")
+                print(port, "is listening")
+                data = [ip, port, timer, True]
+                writer.writerow(data)
+            else:
+                data = [ip, port, timer, False]
+                writer.writerow(data)
         except AttributeError:
-            print(port,"is not listening")
+            print(port, "is not listening")
+            data = [ip, port, timer, False]
+            writer.writerow(data)
+
+
 
 checkhost()
 checkport()
