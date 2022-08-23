@@ -13,6 +13,7 @@ queue2 = [] # IP adressess with between 1 and 5 of the most common ports open
 queue3 = [] # IP addresses with no of the most common ports open
 queue4 = [] # IP addresses that are down
 
+# The most common ports that will be scanned first
 common_ports = [
     80, 443, 53, 22, 1723,
     5060, 8080, 21, 4567, 25,
@@ -55,6 +56,7 @@ def scan_most_common(ips: list[str], writer: csv.writer) -> None:
         else:
             queue4.append(ip)
 
+# Scans all ports that are not in the most common ports
 def scan_other(ips: list[str]) -> None:
     nm = nmap.PortScanner()
     for ip in ips:
